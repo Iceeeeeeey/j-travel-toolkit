@@ -460,7 +460,7 @@ function defaultPacking() {
 function inferTitle(excelPath, days) {
   const firstCity = days[0]?.city || "旅行";
   const base = path.basename(excelPath, path.extname(excelPath));
-  if (base && !/^sample|template|行程$/i.test(base)) return base;
+  if (base && !/^sample|template|行程|j人旅行神器|.*模板.*$/i.test(base)) return base;
   return `${firstCity}旅行行动卡`;
 }
 

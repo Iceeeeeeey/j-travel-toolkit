@@ -4,12 +4,11 @@ import path from "node:path";
 import process from "node:process";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { unzipSync, strFromU8 } from "fflate";
-import { DOMParser } from "@xmldom/xmldom";
 
 const __filename = fileURLToPath(import.meta.url);
 const skillDir = path.resolve(path.dirname(__filename), "..");
 const templateDir = path.join(skillDir, "assets", "app-template");
+const readXlsxScript = path.join(skillDir, "scripts", "read-xlsx.py");
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -104,111 +103,12 @@ function parseWorkbook(workbook, excelPath) {
 }
 
 async function readWorkbook(excelPath) {
-  const zip = unzipSync(fs.readFileSync(excelPath));
-  const xml = (name) => {
-    const entry = zip[name];
-    return entry ? strFromU8(entry) : "";
-  };
-  const workbookDoc = parseXml(xml("xl/workbook.xml"));
-  const rels = parseRelationships(xml("xl/_rels/workbook.xml.rels"));
-  const sharedStrings = parseSharedStrings(xml("xl/sharedStrings.xml"));
-  const sheets = elements(workbookDoc, "sheet").map((sheet, index) => {
-    const name = sheet.getAttribute("name") || `Sheet${index + 1}`;
-    const relId = sheet.getAttribute("r:id");
-    const target = rels[relId] || `worksheets/sheet${index + 1}.xml`;
-    const normalized = target.startsWith("/") ? target.slice(1) : `xl/${target.replace(/^xl\//, "")}`;
-    return { name, path: normalized };
+  const output = execFileSync("python3", [readXlsxScript, path.resolve(excelPath)], {
+    cwd: skillDir,
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
   });
-  const workbook = {};
-  for (const sheet of sheets) {
-    workbook[sheet.name] = rowsToObjects(parseSheetRows(xml(sheet.path), sharedStrings));
-  }
-  return workbook;
-}
-
-function rowsToObjects(rows) {
-  if (!rows.length) return [];
-  const knownHeaders = new Set(["日期", "星期", "城市", "时间", "行程", "项目", "内容", "分类", "物品", "名称", "用途", "链接", "类型", "编号", "出发", "到达", "酒店", "晚数"]);
-  const headerIndex = rows.findIndex((row) => row.filter((cell) => knownHeaders.has(clean(cell))).length >= 2);
-  if (headerIndex === -1) return [];
-  const headers = rows[headerIndex].map((cell) => clean(cell));
-  return rows.slice(headerIndex + 1).map((row) => {
-    const object = {};
-    headers.forEach((header, index) => {
-      if (!header) return;
-      object[header] = formatCell(row[index]);
-    });
-    return object;
-  }).filter((row) => Object.values(row).some((value) => clean(value)));
-}
-
-function formatCell(value) {
-  return value ?? "";
-}
-
-function parseXml(text) {
-  return new DOMParser().parseFromString(text || "<root/>", "application/xml");
-}
-
-function parseRelationships(text) {
-  const doc = parseXml(text);
-  const rels = {};
-  for (const rel of elements(doc, "Relationship")) {
-    rels[rel.getAttribute("Id")] = rel.getAttribute("Target");
-  }
-  return rels;
-}
-
-function parseSharedStrings(text) {
-  if (!text) return [];
-  const doc = parseXml(text);
-  return elements(doc, "si").map((si) => (
-    elements(si, "t").map((t) => t.textContent || "").join("")
-  ));
-}
-
-function parseSheetRows(text, sharedStrings) {
-  if (!text) return [];
-  const doc = parseXml(text);
-  const rows = [];
-  for (const row of elements(doc, "row")) {
-    const cells = [];
-    for (const cell of elements(row, "c")) {
-      const ref = cell.getAttribute("r") || "";
-      const colIndex = columnIndex(ref.replace(/\d+/g, ""));
-      cells[colIndex] = parseCell(cell, sharedStrings);
-    }
-    rows.push(cells.map((value) => value ?? ""));
-  }
-  return rows;
-}
-
-function parseCell(cell, sharedStrings) {
-  const inline = elements(cell, "is")[0];
-  if (inline) {
-    return elements(inline, "t").map((t) => t.textContent || "").join("");
-  }
-  const type = cell.getAttribute("t");
-  const valueNode = elements(cell, "v")[0];
-  const value = valueNode ? valueNode.textContent || "" : "";
-  if (type === "s") return sharedStrings[Number(value)] || "";
-  if (type === "inlineStr" || type === "str") return value;
-  return value;
-}
-
-function columnIndex(column) {
-  let index = 0;
-  for (const char of column) {
-    index = index * 26 + (char.charCodeAt(0) - 64);
-  }
-  return Math.max(index - 1, 0);
-}
-
-function elements(root, localName) {
-  return Array.from(root.getElementsByTagName("*")).filter((node) => {
-    const name = node.localName || node.nodeName.split(":").pop();
-    return name === localName;
-  });
+  return JSON.parse(output);
 }
 
 function sheetRows(workbook, names) {

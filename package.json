@@ -12,9 +12,5 @@
     "sample": "node skills/j-travel-toolkit/scripts/j-travel-toolkit.mjs create --excel examples/sample-europe-trip.xlsx --out .tmp/sample-site",
     "build:sample": "cd .tmp/sample-site && npm install && npm run build"
   },
-  "license": "MIT",
-  "dependencies": {
-    "@xmldom/xmldom": "^0.9.10",
-    "fflate": "^0.8.3"
-  }
+  "license": "MIT"
 }

@@ -40,8 +40,9 @@ Use J人旅行神器 to generate my travel plan app from the template.
 
 1. 对 Codex 或 Claude Code 说：`使用 J人旅行神器，帮我生成旅行计划 app。`
 2. Skill 会先给你一份固定模板。
-3. 你只需要按模板填写，不需要自己设计 Excel 格式。
-4. 填好后上传/send back，Skill 再生成并发布旅行计划 app。
+3. 模板只有一个 `行程` sheet、一张表：日期、星期、城市、时间、行程、交通、住宿。
+4. 模板里有 3 天左右示意数据，上传前记得删掉示意数据，再填成自己的真实行程。
+5. 填好后上传/send back，Skill 再生成并发布旅行计划 app。
 
 ## 生成结果
 

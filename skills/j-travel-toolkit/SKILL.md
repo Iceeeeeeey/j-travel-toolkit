@@ -12,7 +12,8 @@ Turn the bundled travel planning template into a mobile-first travel plan app an
 Create a phone-friendly Chinese travel assistant for J-type planners:
 
 - Replace dense Feishu/Tencent Docs/Excel reading with one clear daily action card.
-- Always use the bundled Excel template as the input contract. Do not invite users to improvise their own spreadsheet structure.
+- Always use the bundled Excel template as the input contract. It should be one sheet named `行程` with one table only.
+- Keep the user-facing template lightweight: core itinerary, transport, and accommodation in one table.
 - Use bottom navigation: `行程`, `贴士`, `交通`, `快捷`.
 - Use `交通`, not `航班`, because it includes flights, trains, taxis, walking, ferries, and transfers.
 - Keep the app Chinese-only.
@@ -26,20 +27,21 @@ Create a phone-friendly Chinese travel assistant for J-type planners:
 2. If no Excel file is present, stop before generating anything. Proactively give the user the bundled template and ask them to fill it, using casual Chinese:
 
 ```text
-我先给你一份模板，你按这个填行程就行。
+我先给你一份模板，你按这一张表填行程就行。
 
 填完后把 Excel 发回来，我就帮你生成一个手机上能打开、也能添加到桌面的旅行计划 app。
 ```
 
 3. Copy `assets/j-travel-template.xlsx` to the current workspace with a friendly filename such as `J人旅行神器-行程模板.xlsx`, return that file path, and ask the user to fill that file and upload/send it back.
-4. If the user attached an Excel file that is not based on the template, do not guess silently. Explain that the app uses a fixed template for reliability, then provide the template and ask them to move the content into it.
-5. After a filled template is available, run the generator:
+4. Tell the user clearly: the template includes about 3 days of sample data and they should delete the sample rows before uploading their real trip.
+5. If the user attached an Excel file that is not based on the template, do not guess silently. Explain that the app uses a fixed one-sheet template for reliability, then provide the template and ask them to move the content into it.
+6. After a filled template is available, run the generator:
 
 ```bash
 node <skill-dir>/scripts/j-travel-toolkit.mjs create --excel <trip.xlsx> --out <workdir>/<repo-name>
 ```
 
-6. Review generated `dist/` locally by running:
+7. Review generated `dist/` locally by running:
 
 ```bash
 cd <workdir>/<repo-name>
@@ -47,14 +49,14 @@ npm install
 npm run build
 ```
 
-7. Before publishing, perform the privacy check from `references/privacy-check.md`.
-8. Publish with GitHub Pages:
+8. Before publishing, perform the privacy check from `references/privacy-check.md`.
+9. Publish with GitHub Pages:
 
 ```bash
 node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <workdir>/<repo-name> --repo-url <github-repo-url>
 ```
 
-9. Return the GitHub Pages URL and phone instructions:
+10. Return the GitHub Pages URL and phone instructions:
 
 - iPhone: open in Safari, tap Share, choose `添加到主屏幕`.
 - Android: open in Chrome, tap menu, choose `安装应用` or `添加到主屏幕`.
@@ -63,21 +65,13 @@ node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <workdir>/<repo-nam
 
 Read `references/excel-schema.md` when validating or explaining the workbook format.
 
-Minimum accepted sheet:
+Accepted template:
 
-- A sheet named `行程`
-- Columns: `日期`, `星期`, `城市`, `时间`, `行程`
+- One sheet named `行程`
+- One table with columns: `日期`, `星期`, `城市`, `时间`, `行程`, `交通`, `住宿`
+- The bundled template contains sample rows. Users should delete sample rows before uploading.
 
-Optional sheets:
-
-- `交通`
-- `住宿`
-- `贴士`
-- `物品`
-- `快捷`
-- `信息`
-
-If only `行程` exists, infer daily action cards and transport-like activities from the `行程` text.
+Infer daily action cards from `行程`, transport cards from `交通` plus transport-like activity text, and lodging cards from `住宿`.
 
 ## Publishing Rules
 

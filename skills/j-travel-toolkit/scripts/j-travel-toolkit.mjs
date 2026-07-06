@@ -136,6 +136,7 @@ function parseItinerary(workbook) {
   let current = { date: "", weekday: "", city: "" };
   let dayIndex = 0;
   let activityIndex = 0;
+  let hotelIndex = 0;
 
   for (const row of rows) {
     const date = clean(row["日期"] || row["Date"]);
@@ -143,11 +144,17 @@ function parseItinerary(workbook) {
     const city = clean(row["城市"] || row["City"]);
     const time = clean(row["时间"] || row["Time"]);
     const text = clean(row["行程"] || row["活动"] || row["Activity"] || row["Itinerary"]);
+    const transportText = clean(row["交通"] || row["Transport"]);
+    const hotelText = clean(row["住宿"] || row["酒店"] || row["Hotel"]);
 
-    if (date) current.date = date;
+    if (date) {
+      current.date = date;
+      current.hotel = "";
+    }
     if (weekday) current.weekday = weekday;
     if (city) current.city = city;
-    if (!text && !time) continue;
+    if (hotelText) current.hotel = hotelText;
+    if (!text && !time && !transportText && !hotelText) continue;
     if (!current.date) current.date = `第${days.length + 1}天`;
 
     let day = days.find((candidate) => candidate.date === current.date);
@@ -168,15 +175,30 @@ function parseItinerary(workbook) {
     }
 
     const title = text || "待定";
-    if (title === "-" && day.activities.length > 0) continue;
-    activityIndex += 1;
-    const parsed = splitActivity(title);
-    day.activities.push({
-      id: `a-${activityIndex}`,
-      time,
-      title: parsed.title,
-      note: parsed.note,
-    });
+    if (!(title === "-" && day.activities.length > 0)) {
+      activityIndex += 1;
+      const parsed = splitActivity(title);
+      day.activities.push({
+        id: `a-${activityIndex}`,
+        time,
+        title: parsed.title,
+        note: parsed.note,
+        transport: transportText,
+      });
+    }
+
+    if (current.hotel && !day.hotel) {
+      hotelIndex += 1;
+      day.hotel = {
+        id: `h-inline-${hotelIndex}`,
+        date: current.date,
+        city: current.city,
+        name: current.hotel,
+        nights: "",
+        address: "",
+        note: "来自模板住宿列",
+      };
+    }
   }
 
   for (const day of days) {
@@ -259,14 +281,14 @@ function parseTransport(workbook, days) {
   let index = 0;
   for (const day of days) {
     for (const activity of day.activities) {
-      const text = `${activity.title} ${activity.note || ""}`;
+      const text = `${activity.transport || ""} ${activity.title} ${activity.note || ""}`;
       if (!isTransportText(text)) continue;
       index += 1;
       inferred.push({
         id: `t-${index}`,
         date: day.date,
         type: inferTransportType(text),
-        title: activity.title,
+        title: activity.transport || activity.title,
         code: inferTransportCode(text),
         departure: inferDeparture(day.city, text),
         arrival: inferArrival(day.city, text),

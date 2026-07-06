@@ -1,7 +1,7 @@
 {
   "name": "j-travel-toolkit",
   "version": "0.1.0",
-  "description": "J人旅行神器，把复杂旅行表变成手机行动卡。",
+  "description": "J人旅行神器，把一张旅行表变成手机旅行计划 app。",
   "author": {
     "name": "icey"
   },
@@ -17,8 +17,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "J人旅行神器",
-    "shortDescription": "把复杂旅行表变成手机行动卡",
-    "longDescription": "把飞书、腾讯文档或 Excel 里的密密麻麻旅行计划，变成手机上每天一页、一眼能看的出门行动卡，并发布为 GitHub Pages 链接。",
+    "shortDescription": "用模板生成旅行计划 app",
+    "longDescription": "把一张极简旅行模板变成手机上每天一页、一眼能看的旅行计划 app，自动补齐常用贴士和链接，并发布为 GitHub Pages 链接。",
     "developerName": "icey",
     "category": "Productivity",
     "capabilities": [
@@ -26,7 +26,7 @@
       "Publish"
     ],
     "defaultPrompt": [
-      "用 J人旅行神器，根据我的 Excel 生成旅行行动卡链接。"
+      "使用 J人旅行神器，帮我生成旅行计划 app。"
     ],
     "brandColor": "#7C3AED"
   }

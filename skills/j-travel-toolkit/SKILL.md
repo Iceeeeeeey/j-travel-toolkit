@@ -20,6 +20,7 @@ Create a phone-friendly Chinese travel assistant for J-type planners:
 - Keep map support as external links only. Do not build an embedded map component.
 - Remove "已预约" as a required template column. If the user writes notes such as `已预约`, treat it as plain activity detail.
 - Prefer the mature Europe-trip visual style: warm travel palette, rounded mobile cards, horizontal day selector, timeline activities, transport cards, packing checklist.
+- Users only fill the core itinerary. The skill should enrich the generated app with practical public links and reminders.
 
 ## Workflow
 
@@ -41,7 +42,14 @@ Create a phone-friendly Chinese travel assistant for J-type planners:
 node <skill-dir>/scripts/j-travel-toolkit.mjs create --excel <trip.xlsx> --out <workdir>/<repo-name>
 ```
 
-7. Review generated `dist/` locally by running:
+7. Enrich the app content before publishing:
+
+- If web access is available, search for official attraction pages, Klook/GetYourGuide/Trip.com search or product pages, local transport official pages, weather, currency, and Google Maps search links.
+- If a precise product page cannot be verified, use a search page instead of inventing a specific link.
+- Keep links external; do not build embedded maps.
+- The generator already adds useful fallback links such as Klook search, Google Maps search, weather, and currency.
+
+8. Review generated `dist/` locally by running:
 
 ```bash
 cd <workdir>/<repo-name>
@@ -49,14 +57,16 @@ npm install
 npm run build
 ```
 
-8. Before publishing, perform the privacy check from `references/privacy-check.md`.
-9. Publish with GitHub Pages:
+9. Before publishing, perform the privacy check from `references/privacy-check.md`.
+10. Publish with GitHub Pages:
 
 ```bash
-node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <workdir>/<repo-name> --repo-url <github-repo-url>
+node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <workdir>/<repo-name> --repo-name <safe-trip-repo-name>
 ```
 
-10. Return the GitHub Pages URL and phone instructions:
+If GitHub CLI is unavailable or not authenticated, explain that publishing needs GitHub command-line access. Ask the user to run `gh auth login` or create a public GitHub repository and provide `--repo-url <github-repo-url>`.
+
+11. Return the GitHub Pages URL and phone instructions:
 
 - iPhone: open in Safari, tap Share, choose `添加到主屏幕`.
 - Android: open in Chrome, tap menu, choose `安装应用` or `添加到主屏幕`.
@@ -92,4 +102,5 @@ Default publishing strategy:
 - Text must not overflow buttons or cards.
 - The app must include a web app manifest and install guidance.
 - The result must not require users to open Excel during the trip.
-- The final response must include the generated URL, source folder, and any publishing limitation.
+- The final response must include the public GitHub Pages URL, source folder, and any publishing limitation.
+- Do not treat `localhost` or `127.0.0.1` as the final deliverable.

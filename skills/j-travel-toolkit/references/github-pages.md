@@ -12,7 +12,18 @@ https://<github-user>.github.io/<repo-name>/
 
 ## Prerequisites
 
-Use an existing public GitHub repository URL, or ask the user to create a public repository before publishing.
+Publishing requires GitHub command-line access.
+
+Preferred:
+
+```bash
+gh auth status
+```
+
+If `gh` is unavailable or not authenticated, ask the user to either:
+
+- Run `gh auth login`, or
+- Create a public GitHub repository and provide the repository URL.
 
 ## Privacy
 
@@ -36,14 +47,28 @@ npm install
 npm run build
 ```
 
-Use a repo URL:
+Preferred command from the generated site directory:
 
 ```bash
-git init
-git add .
-git commit -m "Initial travel app"
-git branch -M main
-git remote add origin <repo-url>
-git push -u origin main
-npm run deploy
+node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <site-dir> --repo-name <safe-trip-repo-name>
+```
+
+Use a repo URL when GitHub CLI is unavailable:
+
+```bash
+node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <site-dir> --repo-url <repo-url>
+```
+
+If the user intentionally wants to replace an existing generated trip repo, use:
+
+```bash
+node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <site-dir> --repo-url <repo-url> --replace-existing
+```
+
+Only use `--replace-existing` for a repo that is meant to be owned by this generated trip app.
+
+Expected final URL:
+
+```text
+https://<github-user>.github.io/<repo-name>/
 ```

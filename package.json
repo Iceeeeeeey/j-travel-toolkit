@@ -7,8 +7,8 @@
     "j-travel-toolkit": "./skills/j-travel-toolkit/scripts/j-travel-toolkit.mjs"
   },
   "scripts": {
-    "validate:skill": "python3 /Users/icey/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/j-travel-toolkit",
-    "validate:plugin": "python3 /Users/icey/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .",
+    "validate:skill": "node scripts/validate-skill.mjs skills/j-travel-toolkit",
+    "validate:plugin": "node scripts/validate-plugin.mjs .",
     "sample": "node skills/j-travel-toolkit/scripts/j-travel-toolkit.mjs create --excel examples/sample-europe-trip.xlsx --out .tmp/sample-site",
     "build:sample": "cd .tmp/sample-site && npm install && npm run build"
   },

@@ -9,6 +9,13 @@ const __filename = fileURLToPath(import.meta.url);
 const skillDir = path.resolve(path.dirname(__filename), "..");
 const templateDir = path.join(skillDir, "assets", "app-template");
 const readXlsxScript = path.join(skillDir, "scripts", "read-xlsx.py");
+const generatedGitignoreEntries = [
+  "node_modules/",
+  "dist/",
+  ".deploy-gh-pages/",
+  ".gh-pages-worktree/",
+  ".DS_Store",
+];
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -73,7 +80,9 @@ function usage() {
 Usage:
   j-travel-toolkit create --excel trip.xlsx --out ./my-trip-site
   j-travel-toolkit publish --site ./my-trip-site
+  j-travel-toolkit publish --site ./my-trip-site --repo-name my-trip-app
   j-travel-toolkit publish --site ./my-trip-site --repo-url https://github.com/user/repo.git
+  j-travel-toolkit publish --site ./my-trip-site --repo-url https://github.com/user/repo.git --replace-existing
 `);
 }
 
@@ -98,7 +107,7 @@ function parseWorkbook(workbook, excelPath) {
     transport,
     tips: tips.length ? tips : defaultTips(),
     packing: packing.length ? packing : defaultPacking(),
-    links,
+    links: enrichLinks(links, days),
   };
 }
 
@@ -360,17 +369,31 @@ npm run deploy
 
 function publish(siteDir, publishOptions = {}) {
   if (!fs.existsSync(path.join(siteDir, "package.json"))) throw new Error(`Not a generated site directory: ${siteDir}`);
-  ensureGitRepo(siteDir, publishOptions["repo-url"]);
+  ensureGeneratedGitignore(siteDir);
+  ensureGitRepo(siteDir, publishOptions);
   run("npm", ["install"], siteDir);
   run("npm", ["run", "build"], siteDir);
   run("npm", ["run", "deploy"], siteDir);
+  const repoUrl = getCommandOutput("git", ["remote", "get-url", "origin"], siteDir).trim();
+  const pagesUrl = inferPagesUrl(repoUrl);
+  console.log(JSON.stringify({ pagesUrl, repoUrl }, null, 2));
 }
 
 function run(cmd, args, cwd) {
   execFileSync(cmd, args, { cwd, stdio: "inherit" });
 }
 
-function ensureGitRepo(siteDir, repoUrl) {
+function tryRun(cmd, args, cwd) {
+  try {
+    execFileSync(cmd, args, { cwd, stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function ensureGitRepo(siteDir, publishOptions = {}) {
+  const repoUrl = publishOptions["repo-url"];
   if (!fs.existsSync(path.join(siteDir, ".git"))) {
     run("git", ["init"], siteDir);
   }
@@ -382,10 +405,16 @@ function ensureGitRepo(siteDir, repoUrl) {
       run("git", ["remote", "add", "origin", repoUrl], siteDir);
     }
   }
-  const hasOrigin = getCommandOutput("git", ["remote", "get-url", "origin"], siteDir).trim();
-  if (!hasOrigin) {
-    throw new Error("No git remote origin configured. Pass --repo-url <github-repo-url> or create the repo with GitHub CLI first.");
+  let hasOrigin = getCommandOutput("git", ["remote", "get-url", "origin"], siteDir).trim();
+  if (!hasOrigin && commandExists("gh")) {
+    const repoName = publishOptions["repo-name"] || safeRepoName(siteDir);
+    run("gh", ["repo", "create", repoName, "--public", "--source", ".", "--remote", "origin"], siteDir);
+    hasOrigin = getCommandOutput("git", ["remote", "get-url", "origin"], siteDir).trim();
   }
+  if (!hasOrigin) {
+    throw new Error("No git remote origin configured. Install/authenticate GitHub CLI (`gh auth login`) or pass --repo-url <github-repo-url> for a public GitHub repo.");
+  }
+  removeIgnoredGeneratedFilesFromGit(siteDir);
   run("git", ["add", "."], siteDir);
   try {
     run("git", ["commit", "-m", "Generate travel action cards"], siteDir);
@@ -393,7 +422,46 @@ function ensureGitRepo(siteDir, repoUrl) {
     console.log("No source changes to commit.");
   }
   run("git", ["branch", "-M", "main"], siteDir);
-  run("git", ["push", "-u", "origin", "main"], siteDir);
+  if (publishOptions["replace-existing"]) {
+    tryRun("git", ["fetch", "origin", "main"], siteDir);
+  }
+  const pushArgs = publishOptions["replace-existing"]
+    ? ["push", "--force-with-lease", "-u", "origin", "main"]
+    : ["push", "-u", "origin", "main"];
+  run("git", pushArgs, siteDir);
+}
+
+function ensureGeneratedGitignore(siteDir) {
+  const gitignorePath = path.join(siteDir, ".gitignore");
+  const existing = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, "utf8") : "";
+  const lines = new Set(existing.split(/\r?\n/).map((line) => line.trim()).filter(Boolean));
+  let changed = false;
+  for (const entry of generatedGitignoreEntries) {
+    if (lines.has(entry)) continue;
+    lines.add(entry);
+    changed = true;
+  }
+  if (changed || !fs.existsSync(gitignorePath)) {
+    fs.writeFileSync(gitignorePath, `${[...lines].join("\n")}\n`);
+  }
+}
+
+function removeIgnoredGeneratedFilesFromGit(siteDir) {
+  const tracked = getCommandOutput("git", ["ls-files"], siteDir).split(/\r?\n/).filter(Boolean);
+  const toUntrack = tracked.filter((file) => (
+    file === ".DS_Store" ||
+    file === "dist" ||
+    file.startsWith("dist/") ||
+    file === "node_modules" ||
+    file.startsWith("node_modules/") ||
+    file === ".deploy-gh-pages" ||
+    file.startsWith(".deploy-gh-pages/") ||
+    file === ".gh-pages-worktree" ||
+    file.startsWith(".gh-pages-worktree/")
+  ));
+  if (toUntrack.length) {
+    run("git", ["rm", "-r", "--cached", "--ignore-unmatch", ...toUntrack], siteDir);
+  }
 }
 
 function getCommandOutput(cmd, args, cwd) {
@@ -402,6 +470,108 @@ function getCommandOutput(cmd, args, cwd) {
   } catch {
     return "";
   }
+}
+
+function commandExists(cmd) {
+  try {
+    execFileSync("sh", ["-lc", `command -v ${cmd}`], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function safeRepoName(siteDir) {
+  return slugify(path.basename(siteDir)).replace(/^-+|-+$/g, "") || `j-travel-${Date.now()}`;
+}
+
+function inferPagesUrl(repoUrl) {
+  const match = repoUrl.match(/github\.com[:/](.+?)\/(.+?)(?:\.git)?$/);
+  if (!match) return "";
+  return `https://${match[1]}.github.io/${match[2].replace(/\.git$/, "")}/`;
+}
+
+function enrichLinks(links, days) {
+  const seen = new Set();
+  const add = (items, item) => {
+    const key = `${item.category}|${item.name}|${item.url}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    items.push(item);
+  };
+  const enriched = [];
+  for (const link of links) add(enriched, link);
+
+  const cities = unique(days.map((day) => routeDestination(day.city || "")).filter(Boolean)).slice(0, 8);
+  const activities = unique(days.flatMap((day) => day.activities.map((activity) => activity.title)).filter(Boolean));
+  const placeActivities = activities.filter(isPlaceLikeActivity).slice(0, 10);
+  const ticketActivities = activities.filter(isTicketLikeActivity).slice(0, 8);
+  const destinations = unique([...cities, ...placeActivities]).slice(0, 12);
+
+  destinations.forEach((destination, index) => {
+    add(enriched, {
+      id: `auto-map-${index + 1}`,
+      category: "地图导航",
+      name: `${destination} 地图`,
+      purpose: "打开 Google Maps 搜索位置和路线",
+      url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`,
+    });
+  });
+
+  ticketActivities.forEach((activity, index) => {
+    add(enriched, {
+      id: `auto-klook-${index + 1}`,
+      category: "景点购票",
+      name: `${activity} 购票`,
+      purpose: "Klook 搜索入口，确认具体产品后再下单",
+      url: `https://www.klook.com/search/?query=${encodeURIComponent(activity)}`,
+    });
+  });
+
+  cities.forEach((city, index) => {
+    add(enriched, {
+      id: `auto-weather-${index + 1}`,
+      category: "实用工具",
+      name: `${city} 天气`,
+      purpose: "出门前看天气和穿衣",
+      url: `https://www.google.com/search?q=${encodeURIComponent(`${city} 天气`)}`,
+    });
+  });
+
+  add(enriched, {
+    id: "auto-currency",
+    category: "实用工具",
+    name: "汇率查询",
+    purpose: "查看当地货币和人民币汇率",
+    url: "https://www.google.com/search?q=%E6%B1%87%E7%8E%87",
+  });
+
+  return enriched;
+}
+
+function unique(values) {
+  return [...new Set(values.map(clean).filter(Boolean))];
+}
+
+function routeDestination(value) {
+  const parts = splitRoute(value);
+  return parts[parts.length - 1] || clean(value);
+}
+
+function isPlaceLikeActivity(text) {
+  const value = clean(text);
+  if (!value || isLowValueLinkActivity(value)) return false;
+  return /博物馆|美术馆|教堂|广场|神殿|宫|城堡|古城|老城|小镇|公园|花园|市场|海滩|码头|岛|山|湖|河|塔|寺|街区|景区|景点|遗址|剧院|观景|日落|徒步|游船|温泉|动物园|水族馆|斗兽场|万神殿|许愿池/i.test(value);
+}
+
+function isTicketLikeActivity(text) {
+  const value = clean(text);
+  if (!isPlaceLikeActivity(value)) return false;
+  return /博物馆|美术馆|教堂|宫|城堡|遗址|剧院|景区|景点|游船|温泉|动物园|水族馆|斗兽场|万神殿|游玩|门票|预约|购票/i.test(value);
+}
+
+function isLowValueLinkActivity(text) {
+  return /出发|到达|机场|车站|酒店|入住|退房|寄存|放行李|休息|睡觉|早餐|午餐|晚餐|吃饭|打车|地铁|公交|步行|飞|航班|高铁|火车|转机|换乘|check-?in/i.test(text);
 }
 
 function isTransportText(text) {
@@ -441,6 +611,7 @@ function defaultTips() {
   return [
     { id: "tip-1", category: "出门提醒", text: "每天出门前看一眼今日行程，确认交通、门票、酒店和必带物品。" },
     { id: "tip-2", category: "隐私提醒", text: "公开链接里不要放护照号、订单号、详细房号和私人电话。" },
+    { id: "tip-3", category: "链接提醒", text: "购票和地图入口优先作为搜索入口，实际下单前请再次核对日期、场次和退改规则。" },
   ];
 }
 

@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Check,
   ChevronRight,
+  Clock3,
   ExternalLink,
   Home,
   Info,
@@ -61,6 +62,7 @@ function App() {
   return (
     <div className="app">
       <header className="hero">
+        <div className="hero-glow" />
         <div>
           <p className="eyebrow">J人旅行神器</p>
           <h1>{trip.title}</h1>
@@ -148,7 +150,7 @@ function ItineraryTab({ days, activeDay, selectedDay, setSelectedDay, done, togg
             onClick={() => toggleDone(activity.id)}
           >
             <span className="check-circle">{done.has(activity.id) && <Check size={13} />}</span>
-            <span className="time">{activity.time || "待定"}</span>
+            <span className="time"><Clock3 size={13} />{activity.time || "待定"}</span>
             <span className="activity-body">
               <strong>{activity.title}</strong>
               {activity.note && <em>{activity.note}</em>}
@@ -174,11 +176,15 @@ function ItineraryTab({ days, activeDay, selectedDay, setSelectedDay, done, togg
 function TipsTab({ tips = [], packing = [], packed, togglePacked }) {
   return (
     <section className="stack">
+      <div className="tip-banner">
+        <strong>出门前看一眼</strong>
+        <p>这里放 AI 自动补齐的提醒和必带清单，适合出门前快速扫一遍。</p>
+      </div>
       <div className="section-title">
         <Info size={18} />
         <h3>出门提醒</h3>
       </div>
-      {tips.length === 0 ? <EmptyState title="还没有贴士" text="可以在 Excel 的贴士 sheet 里补充天气、换汇、禁忌等。" /> : null}
+      {tips.length === 0 ? <EmptyState title="还没有贴士" text="我会根据你填的行程补充天气、换汇、购票和出门提醒。" /> : null}
       {tips.map((tip) => (
         <div key={tip.id} className="tip-card">
           <strong>{tip.category || "提醒"}</strong>
@@ -238,6 +244,10 @@ function LinksTab({ links = [] }) {
   const groups = groupBy(links, (link) => link.category || "快捷入口");
   return (
     <section className="stack">
+      <div className="tip-banner">
+        <strong>常用入口</strong>
+        <p>地图、购票、天气和工具都放这里；不内置地图，打开外部链接继续操作。</p>
+      </div>
       {Object.entries(groups).map(([category, items]) => (
         <div key={category}>
           <div className="section-title">
@@ -257,7 +267,7 @@ function LinksTab({ links = [] }) {
           </div>
         </div>
       ))}
-      {links.length === 0 && <EmptyState title="还没有快捷链接" text="可添加购票、交通、天气、换汇等外部链接。" />}
+      {links.length === 0 && <EmptyState title="还没有快捷链接" text="我会根据城市和行程补充地图、购票、天气、换汇等外部入口。" />}
     </section>
   );
 }
@@ -281,4 +291,3 @@ function groupBy(items, pick) {
 }
 
 createRoot(document.getElementById("root")).render(<App />);
-

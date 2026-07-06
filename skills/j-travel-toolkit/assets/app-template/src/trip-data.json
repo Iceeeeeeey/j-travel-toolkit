@@ -1,0 +1,66 @@
+{
+  "id": "sample-trip",
+  "title": "J人旅行神器",
+  "subtitle": "每天一页，一眼知道今天要干啥",
+  "days": [
+    {
+      "id": "day-1",
+      "date": "4月3日",
+      "weekday": "星期五",
+      "city": "成都→罗马",
+      "summary": "直飞航班，建议提前3小时到机场。",
+      "activities": [
+        {
+          "id": "a-1",
+          "time": "01:40-07:00",
+          "title": "川航3U3895从成都直飞到罗马"
+        },
+        {
+          "id": "a-2",
+          "time": "07:00-10:00",
+          "title": "机场打车去酒店放行李休息+吃饭",
+          "note": "IQ hotel 埃奎罗马酒店"
+        }
+      ],
+      "hotel": {
+        "name": "IQ hotel 埃奎罗马酒店",
+        "city": "罗马",
+        "nights": 3
+      }
+    }
+  ],
+  "transport": [
+    {
+      "id": "t-1",
+      "date": "4月3日",
+      "type": "飞机",
+      "title": "成都 → 罗马",
+      "code": "3U3895",
+      "departure": "成都",
+      "arrival": "罗马",
+      "time": "01:40-07:00",
+      "note": "建议提前3小时到机场"
+    }
+  ],
+  "tips": [
+    {
+      "id": "tip-1",
+      "category": "出门提醒",
+      "text": "把复杂计划留在表格里，出门时只看今天这一页。"
+    }
+  ],
+  "packing": [
+    {
+      "id": "pack-1",
+      "category": "证件",
+      "name": "护照"
+    },
+    {
+      "id": "pack-2",
+      "category": "电子",
+      "name": "充电宝"
+    }
+  ],
+  "links": []
+}
+

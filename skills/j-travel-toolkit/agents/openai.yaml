@@ -1,8 +1,7 @@
 interface:
   display_name: "J人旅行神器"
-  short_description: "把复杂旅行表变成手机行动卡"
+  short_description: "用模板生成旅行计划 app"
   brand_color: "#7C3AED"
-  default_prompt: "Use $j-travel-toolkit to turn my travel Excel into a phone-friendly travel action-card link."
+  default_prompt: "使用 $j-travel-toolkit，帮我生成旅行计划 app。请先给我模板，等我填好后再生成。"
 policy:
   allow_implicit_invocation: true
-

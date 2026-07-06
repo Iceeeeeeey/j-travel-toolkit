@@ -2,7 +2,7 @@
 
 把密密麻麻的旅行计划，变成手机上每天一页、一眼能看的出门行动卡。
 
-这个仓库提供 Codex / Claude Code 可用的 Agent Skill。用户填写 Excel 行程表后，让 AI 使用本 Skill 生成一个可发布到 GitHub Pages 的手机旅行助手链接。手机打开链接后，可以添加到主屏幕，出门时直接看今天要做什么、怎么走、住哪里、注意什么。
+这个仓库提供 Codex / Claude Code 可用的 Agent Skill。用户先填写我们给定的 Excel 模板，再让 AI 使用本 Skill 生成一个可发布到 GitHub Pages 的手机旅行计划 app 链接。手机打开链接后，可以添加到主屏幕，出门时直接看今天要做什么、怎么走、住哪里、注意什么。
 
 ## 适合谁
 
@@ -19,7 +19,7 @@
 推荐对 Codex 说：
 
 ```text
-使用 J人旅行神器，根据这个 Excel 生成我的旅行行动卡链接。
+使用 J人旅行神器，帮我生成旅行计划 app。
 ```
 
 ### Claude Code
@@ -33,15 +33,15 @@
 然后对 Claude Code 说：
 
 ```text
-Use J人旅行神器 to turn this Excel into a phone-friendly travel action-card link.
+Use J人旅行神器 to generate my travel plan app from the template.
 ```
 
 ## 使用方式
 
-1. 复制 `skills/j-travel-toolkit/assets/j-travel-template.xlsx`。
-2. 至少填写 `行程` sheet：`日期 / 星期 / 城市 / 时间 / 行程`。
-3. 把 Excel 发给 Codex 或 Claude Code。
-4. 让 AI 使用本 Skill 生成并发布旅行行动卡。
+1. 对 Codex 或 Claude Code 说：`使用 J人旅行神器，帮我生成旅行计划 app。`
+2. Skill 会先给你一份固定模板。
+3. 你只需要按模板填写，不需要自己设计 Excel 格式。
+4. 填好后上传/send back，Skill 再生成并发布旅行计划 app。
 
 ## 生成结果
 

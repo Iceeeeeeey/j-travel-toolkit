@@ -1,17 +1,18 @@
 ---
 name: j-travel-toolkit
-description: "Generate a Chinese mobile travel action-card web app from an Excel itinerary and publish it to GitHub Pages. Use when users ask for J人旅行神器, J人旅行, travel action cards, converting trip Excel or dense itinerary docs into a phone-friendly daily travel assistant, GitHub Pages travel app links, or a skill that turns a travel plan spreadsheet into a mobile home-screen app."
+description: "Generate a Chinese mobile travel plan app from the bundled J人旅行神器 Excel template and publish it to GitHub Pages. Use when users ask for J人旅行神器, J人旅行, 旅行计划app, 旅行计划小程序, 旅行行动卡, 帮我生成旅行计划app, converting a filled travel template into a phone-friendly daily travel assistant, or making a mobile home-screen travel app link."
 ---
 
 # J人旅行神器
 
-Turn a dense Chinese travel Excel into a mobile-first travel action-card app and publish it to GitHub Pages.
+Turn the bundled travel planning template into a mobile-first travel plan app and publish it to GitHub Pages.
 
 ## What To Build
 
 Create a phone-friendly Chinese travel assistant for J-type planners:
 
 - Replace dense Feishu/Tencent Docs/Excel reading with one clear daily action card.
+- Always use the bundled Excel template as the input contract. Do not invite users to improvise their own spreadsheet structure.
 - Use bottom navigation: `行程`, `贴士`, `交通`, `快捷`.
 - Use `交通`, not `航班`, because it includes flights, trains, taxis, walking, ferries, and transfers.
 - Keep the app Chinese-only.
@@ -21,15 +22,24 @@ Create a phone-friendly Chinese travel assistant for J-type planners:
 
 ## Workflow
 
-1. Locate the user's Excel file.
-2. If the user has no Excel, copy `assets/j-travel-template.xlsx` and ask them to fill it.
-3. Run the generator:
+1. On every new run, first check whether the user already attached or clearly referenced a filled J人旅行神器 template.
+2. If no Excel file is present, stop before generating anything. Proactively give the user the bundled template and ask them to fill it, using casual Chinese:
+
+```text
+我先给你一份模板，你按这个填行程就行。
+
+填完后把 Excel 发回来，我就帮你生成一个手机上能打开、也能添加到桌面的旅行计划 app。
+```
+
+3. Copy `assets/j-travel-template.xlsx` to the current workspace with a friendly filename such as `J人旅行神器-行程模板.xlsx`, return that file path, and ask the user to fill that file and upload/send it back.
+4. If the user attached an Excel file that is not based on the template, do not guess silently. Explain that the app uses a fixed template for reliability, then provide the template and ask them to move the content into it.
+5. After a filled template is available, run the generator:
 
 ```bash
 node <skill-dir>/scripts/j-travel-toolkit.mjs create --excel <trip.xlsx> --out <workdir>/<repo-name>
 ```
 
-4. Review generated `dist/` locally by running:
+6. Review generated `dist/` locally by running:
 
 ```bash
 cd <workdir>/<repo-name>
@@ -37,14 +47,14 @@ npm install
 npm run build
 ```
 
-5. Before publishing, perform the privacy check from `references/privacy-check.md`.
-6. Publish with GitHub Pages:
+7. Before publishing, perform the privacy check from `references/privacy-check.md`.
+8. Publish with GitHub Pages:
 
 ```bash
 node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <workdir>/<repo-name> --repo-url <github-repo-url>
 ```
 
-7. Return the GitHub Pages URL and phone instructions:
+9. Return the GitHub Pages URL and phone instructions:
 
 - iPhone: open in Safari, tap Share, choose `添加到主屏幕`.
 - Android: open in Chrome, tap menu, choose `安装应用` or `添加到主屏幕`.

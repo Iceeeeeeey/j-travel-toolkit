@@ -1,11 +1,11 @@
 {
   "name": "__APP_TITLE__",
   "short_name": "__APP_SHORT_TITLE__",
-  "description": "每天一页、一眼能看的旅行行动卡",
+  "description": "手机上随手看的旅行卡",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#F8F5FF",
-  "theme_color": "#7C3AED",
+  "background_color": "#FBFAF7",
+  "theme_color": "#EF4F74",
   "icons": [
     {
       "src": "./icon.svg",
@@ -15,4 +15,3 @@
     }
   ]
 }
-

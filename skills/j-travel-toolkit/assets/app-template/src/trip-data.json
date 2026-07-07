@@ -1,7 +1,7 @@
 {
   "id": "sample-trip",
   "title": "J人旅行神器",
-  "subtitle": "每天一页，一眼知道今天要干啥",
+  "subtitle": "",
   "days": [
     {
       "id": "day-1",
@@ -63,4 +63,3 @@
   ],
   "links": []
 }
-

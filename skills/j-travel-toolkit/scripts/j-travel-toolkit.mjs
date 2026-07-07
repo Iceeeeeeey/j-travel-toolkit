@@ -32,7 +32,7 @@ async function main() {
     const outDir = path.resolve(requiredOption("out"));
     const workbook = await readWorkbook(excelPath);
     const data = parseWorkbook(workbook, excelPath);
-    fs.rmSync(outDir, { recursive: true, force: true });
+    fs.rmSync(outDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
     fs.mkdirSync(outDir, { recursive: true });
     fs.cpSync(templateDir, outDir, { recursive: true });
     writeGeneratedSite(outDir, data);
@@ -95,8 +95,8 @@ function parseWorkbook(workbook, excelPath) {
   const tips = parseTips(workbook);
   const packing = parsePacking(workbook);
   const links = parseLinks(workbook);
-  const title = info["旅行名称"] || info["标题"] || inferTitle(excelPath, days);
-  const subtitle = info["副标题"] || "每天一页，一眼知道今天要干啥";
+  const title = info["旅行卡标题"] || inferTitle(days);
+  const subtitle = info["旅行卡副标题"] || "";
   const id = slugify(title || "j-travel");
 
   return {
@@ -628,11 +628,9 @@ function defaultPacking() {
   ].map(([category, name], index) => ({ id: `pack-${index + 1}`, category, name }));
 }
 
-function inferTitle(excelPath, days) {
-  const firstCity = days[0]?.city || "旅行";
-  const base = path.basename(excelPath, path.extname(excelPath));
-  if (base && !/^sample|template|行程|j人旅行神器|.*模板.*$/i.test(base)) return base;
-  return `${firstCity}旅行行动卡`;
+function inferTitle(days) {
+  const destination = routeDestination(days[0]?.city || "") || "旅行";
+  return `${destination}旅行卡`;
 }
 
 function shortTitle(title) {

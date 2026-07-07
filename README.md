@@ -1,6 +1,6 @@
 # J人旅行神器
 
-把一张旅行表，变成手机上每天一页、一眼能看的旅行计划 app。
+把一张旅行表，变成手机上随手看的旅行计划 app。
 
 它适合那种很会做计划的 J 人：出发前把行程排得很细，出门后却不想再打开飞书、腾讯文档或 Excel 翻密密麻麻的内容。你只需要填写一张极简模板，AI 会帮你生成一个可以发布到 GitHub Pages 的手机网页 app。手机打开链接后，可以添加到主屏幕，像独立 app 一样随时查看今天要干啥、怎么走、住哪里、有哪些常用入口。
 
@@ -10,10 +10,7 @@
 | --- | --- | --- |
 | ![行程页](docs/screenshots/01-itinerary.png) | ![交通页](docs/screenshots/02-transport.png) | ![快捷页](docs/screenshots/03-links.png) |
 
-公众号配图在这里：
-
-- [定位图](docs/wechat/01-value.png)
-- [使用流程图](docs/wechat/02-how-to-use.png)
+![动图演示](docs/demo/j-travel-demo.gif)
 
 ## 核心想法
 

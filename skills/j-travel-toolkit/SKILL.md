@@ -21,6 +21,7 @@ Create a phone-friendly Chinese travel assistant for J-type planners:
 - Remove "已预约" as a required template column. If the user writes notes such as `已预约`, treat it as plain activity detail.
 - Prefer the mature Europe-trip visual style: warm travel palette, rounded mobile cards, horizontal day selector, timeline activities, transport cards, packing checklist.
 - Users only fill the core itinerary. The skill should enrich the generated app with practical public links and reminders.
+- Do not invent booking, payment, ticket, or reservation status. Use search/official entry links when exact products are not verified.
 
 ## Workflow
 
@@ -61,7 +62,7 @@ npm run build
 10. Publish with GitHub Pages:
 
 ```bash
-node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <workdir>/<repo-name> --repo-name <safe-trip-repo-name>
+node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <workdir>/<repo-name> --repo-url <github-repo-url>
 ```
 
 If GitHub CLI is unavailable or not authenticated, explain that publishing needs GitHub command-line access. Ask the user to run `gh auth login` or create a public GitHub repository and provide `--repo-url <github-repo-url>`.

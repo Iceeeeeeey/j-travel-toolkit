@@ -26,6 +26,18 @@ Use four tabs:
 - Bottom nav must remain reachable with one thumb.
 - Avoid desktop-only layouts.
 
+## Visual Direction
+
+Use the mature Lovable travel-card style:
+
+- Compact sticky white header, not a large marketing hero.
+- Title should read like `罗马旅行卡` or `新加坡旅行卡` unless the user explicitly supplies another title.
+- Bento-style rounded day selector with a subtle active state and top accent bar.
+- Warm travel palette: paper white, warm beige, coral/pink/orange accents. Avoid large purple surfaces.
+- 16-24px rounded mobile cards, light borders, soft shadows, and dense but scannable content.
+- Bottom navigation should use simple icons/text with a small active underline, not a big filled pill.
+- The first screen should immediately show the actual trip day, not explanatory product copy.
+
 ## Tone
 
 Chinese labels should be short and practical. Avoid technical terms such as PWA in user-facing app copy.
@@ -42,4 +54,3 @@ Avoid:
 - PWA
 - 航班 tab as a broad label
 - Complex setup text inside the generated app
-

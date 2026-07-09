@@ -44,9 +44,13 @@ J-Travel-Toolkit 正是为了解决这段“最后一公里”的痛点而生。
 
 ## 模板下载
 
-模板在仓库里：
+模板只有一个 `行程` sheet，一张表。GitHub 不会直接预览 `.xlsx` 内容，点仓库里的文件页只会看到 `View raw`，这是正常的。
 
-[下载 J人旅行神器模板](skills/j-travel-toolkit/assets/j-travel-template.xlsx)
+[直接下载 J人旅行神器模板](https://github.com/Iceeeeeeey/j-travel-toolkit/raw/main/skills/j-travel-toolkit/assets/j-travel-template.xlsx)
+
+模板预览：
+
+![模板预览](docs/screenshots/template-preview.png)
 
 模板字段：
 

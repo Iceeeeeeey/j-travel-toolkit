@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 
 const skillDir = path.resolve(process.argv[2] || "skills/j-travel-toolkit");
 const skillPath = path.join(skillDir, "SKILL.md");
@@ -46,6 +47,24 @@ const requiredFiles = [
 for (const relative of requiredFiles) {
   const fullPath = path.join(skillDir, relative);
   if (!fs.existsSync(fullPath)) fail(`Missing required skill file: ${relative}`);
+}
+
+const templatePath = path.join(skillDir, "assets/j-travel-template.xlsx");
+const readerPath = path.join(skillDir, "scripts/read-xlsx.py");
+try {
+  const rawTemplate = execFileSync("python3", [readerPath, templatePath], { encoding: "utf8" });
+  const workbook = JSON.parse(rawTemplate);
+  const rows = workbook["行程"] || [];
+  if (rows.length < 3) {
+    fail("Travel template must include sample rows in the 行程 sheet.");
+  }
+  for (const column of ["日期", "星期", "城市", "时间", "行程", "交通", "住宿"]) {
+    if (!Object.prototype.hasOwnProperty.call(rows[0] || {}, column)) {
+      fail(`Travel template is missing required column: ${column}`);
+    }
+  }
+} catch (error) {
+  fail(`Unable to validate travel template contents: ${error.message}`);
 }
 
 console.log(JSON.stringify({

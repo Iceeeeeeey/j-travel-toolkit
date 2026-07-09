@@ -397,6 +397,7 @@ function ensureGitRepo(siteDir, publishOptions = {}) {
   if (!fs.existsSync(path.join(siteDir, ".git"))) {
     run("git", ["init"], siteDir);
   }
+  ensureLocalGitIdentity(siteDir);
   if (repoUrl) {
     const existing = getCommandOutput("git", ["remote"], siteDir).split(/\s+/).filter(Boolean);
     if (existing.includes("origin")) {
@@ -429,6 +430,15 @@ function ensureGitRepo(siteDir, publishOptions = {}) {
     ? ["push", "--force-with-lease", "-u", "origin", "main"]
     : ["push", "-u", "origin", "main"];
   run("git", pushArgs, siteDir);
+}
+
+function ensureLocalGitIdentity(siteDir) {
+  if (!getCommandOutput("git", ["config", "user.name"], siteDir).trim()) {
+    run("git", ["config", "user.name", "J Travel Toolkit"], siteDir);
+  }
+  if (!getCommandOutput("git", ["config", "user.email"], siteDir).trim()) {
+    run("git", ["config", "user.email", "j-travel-toolkit@example.invalid"], siteDir);
+  }
 }
 
 function ensureGeneratedGitignore(siteDir) {

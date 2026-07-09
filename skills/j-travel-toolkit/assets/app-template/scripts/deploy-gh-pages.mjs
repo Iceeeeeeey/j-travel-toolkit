@@ -22,6 +22,23 @@ function tryRun(cmd, args, cwd = root) {
   }
 }
 
+function commandOutput(cmd, args, cwd = root) {
+  try {
+    return execFileSync(cmd, args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+  } catch {
+    return "";
+  }
+}
+
+function ensureLocalGitIdentity(cwd) {
+  if (!commandOutput("git", ["config", "user.name"], cwd).trim()) {
+    run("git", ["config", "user.name", "J Travel Toolkit"], cwd);
+  }
+  if (!commandOutput("git", ["config", "user.email"], cwd).trim()) {
+    run("git", ["config", "user.email", "j-travel-toolkit@example.invalid"], cwd);
+  }
+}
+
 const tmp = path.join(root, ".deploy-gh-pages");
 fs.rmSync(tmp, { recursive: true, force: true });
 fs.mkdirSync(tmp, { recursive: true });
@@ -44,6 +61,7 @@ if (hasBranch) {
   run("git", ["worktree", "add", "--detach", worktree, "HEAD"], root);
   run("git", ["checkout", "--orphan", "gh-pages"], worktree);
 }
+ensureLocalGitIdentity(worktree);
 
 for (const entry of fs.readdirSync(worktree)) {
   if (entry === ".git") continue;

@@ -18,6 +18,7 @@ Create a phone-friendly Chinese travel assistant for J-type planners:
 - Use `交通`, not `航班`, because it includes flights, trains, taxis, walking, ferries, and transfers.
 - Keep the app Chinese-only.
 - Keep map support as external links only. Do not build an embedded map component.
+- Keep the generated app installable and offline-readable after the first successful load.
 - Remove "已预约" as a required template column. If the user writes notes such as `已预约`, treat it as plain activity detail.
 - Prefer the mature Europe-trip visual style: warm travel palette, rounded mobile cards, horizontal day selector, timeline activities, transport cards, packing checklist.
 - Users only fill the core itinerary. The skill should enrich the generated app with practical public links and reminders.
@@ -116,6 +117,7 @@ Default publishing strategy:
 - The page must be mobile-first and usable at 390px width.
 - Text must not overflow buttons or cards.
 - The app must include a web app manifest and install guidance.
+- The app must include service worker caching so the generated trip can be reopened offline after first load.
 - The result must not require users to open Excel during the trip.
 - The final response must include the public GitHub Pages URL, source folder, and any publishing limitation.
 - Do not treat `localhost` or `127.0.0.1` as the final deliverable.

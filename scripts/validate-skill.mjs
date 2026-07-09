@@ -37,6 +37,8 @@ const requiredFiles = [
   "agents/openai.yaml",
   "assets/j-travel-template.xlsx",
   "assets/app-template/package.json",
+  "assets/app-template/public/sw.js",
+  "assets/app-template/scripts/inject-sw-assets.mjs",
   "scripts/j-travel-toolkit.mjs",
   "scripts/read-xlsx.py",
   "references/excel-schema.md",

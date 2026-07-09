@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { createInterface } from "node:readline/promises";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
@@ -21,8 +22,14 @@ const args = process.argv.slice(2);
 const command = args[0];
 const options = parseOptions(args.slice(1));
 
+class FriendlyError extends Error {}
+
 main().catch((error) => {
-  console.error(error.stack || error.message);
+  if (error instanceof FriendlyError) {
+    console.error(error.message);
+  } else {
+    console.error(error.stack || error.message);
+  }
   process.exit(1);
 });
 
@@ -42,7 +49,7 @@ async function main() {
 
   if (command === "publish") {
     const siteDir = path.resolve(requiredOption("site"));
-    publish(siteDir, options);
+    await publish(siteDir, options);
     return;
   }
 
@@ -80,7 +87,6 @@ function usage() {
 Usage:
   j-travel-toolkit create --excel trip.xlsx --out ./my-trip-site
   j-travel-toolkit publish --site ./my-trip-site
-  j-travel-toolkit publish --site ./my-trip-site --repo-name my-trip-app
   j-travel-toolkit publish --site ./my-trip-site --repo-url https://github.com/user/repo.git
   j-travel-toolkit publish --site ./my-trip-site --repo-url https://github.com/user/repo.git --replace-existing
 `);
@@ -367,10 +373,10 @@ npm run deploy
 `;
 }
 
-function publish(siteDir, publishOptions = {}) {
+async function publish(siteDir, publishOptions = {}) {
   if (!fs.existsSync(path.join(siteDir, "package.json"))) throw new Error(`Not a generated site directory: ${siteDir}`);
   ensureGeneratedGitignore(siteDir);
-  ensureGitRepo(siteDir, publishOptions);
+  await ensureGitRepo(siteDir, publishOptions);
   run("npm", ["install"], siteDir);
   run("npm", ["run", "build"], siteDir);
   run("npm", ["run", "deploy"], siteDir);
@@ -392,12 +398,16 @@ function tryRun(cmd, args, cwd) {
   }
 }
 
-function ensureGitRepo(siteDir, publishOptions = {}) {
-  const repoUrl = publishOptions["repo-url"];
+async function ensureGitRepo(siteDir, publishOptions = {}) {
+  let repoUrl = publishOptions["repo-url"];
   if (!fs.existsSync(path.join(siteDir, ".git"))) {
     run("git", ["init"], siteDir);
   }
   ensureLocalGitIdentity(siteDir);
+  let hasOrigin = getCommandOutput("git", ["remote", "get-url", "origin"], siteDir).trim();
+  if (!repoUrl && !hasOrigin && !commandExists("gh")) {
+    repoUrl = await promptForRepoUrl(siteDir);
+  }
   if (repoUrl) {
     const existing = getCommandOutput("git", ["remote"], siteDir).split(/\s+/).filter(Boolean);
     if (existing.includes("origin")) {
@@ -406,14 +416,14 @@ function ensureGitRepo(siteDir, publishOptions = {}) {
       run("git", ["remote", "add", "origin", repoUrl], siteDir);
     }
   }
-  let hasOrigin = getCommandOutput("git", ["remote", "get-url", "origin"], siteDir).trim();
+  hasOrigin = getCommandOutput("git", ["remote", "get-url", "origin"], siteDir).trim();
   if (!hasOrigin && commandExists("gh")) {
     const repoName = publishOptions["repo-name"] || safeRepoName(siteDir);
     run("gh", ["repo", "create", repoName, "--public", "--source", ".", "--remote", "origin"], siteDir);
     hasOrigin = getCommandOutput("git", ["remote", "get-url", "origin"], siteDir).trim();
   }
   if (!hasOrigin) {
-    throw new Error("No git remote origin configured. Install/authenticate GitHub CLI (`gh auth login`) or pass --repo-url <github-repo-url> for a public GitHub repo.");
+    throw new FriendlyError(repoUrlInstructions(siteDir));
   }
   removeIgnoredGeneratedFilesFromGit(siteDir);
   run("git", ["add", "."], siteDir);
@@ -430,6 +440,52 @@ function ensureGitRepo(siteDir, publishOptions = {}) {
     ? ["push", "--force-with-lease", "-u", "origin", "main"]
     : ["push", "-u", "origin", "main"];
   run("git", pushArgs, siteDir);
+}
+
+async function promptForRepoUrl(siteDir) {
+  const pipedInput = readPipedInput();
+  if (pipedInput) return pipedInput;
+
+  if (!process.stdin.isTTY) {
+    throw new FriendlyError(repoUrlInstructions(siteDir));
+  }
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const answer = await rl.question(`${repoUrlInstructions(siteDir)}\n\n把 GitHub 仓库 URL 粘贴到这里，然后回车：`);
+    const repoUrl = clean(answer);
+    if (!repoUrl) throw new FriendlyError("没有收到 GitHub 仓库 URL。");
+    return repoUrl;
+  } finally {
+    rl.close();
+  }
+}
+
+function readPipedInput() {
+  if (process.stdin.isTTY) return "";
+  try {
+    return clean(fs.readFileSync(0, "utf8").split(/\r?\n/).find((line) => clean(line)) || "");
+  } catch {
+    return "";
+  }
+}
+
+function repoUrlInstructions(siteDir) {
+  const repoName = safeRepoName(siteDir);
+  return [
+    "发布公网链接需要一个空的 GitHub 公开仓库。",
+    "",
+    "请让用户按这几步操作：",
+    "1. 打开 https://github.com/new",
+    `2. Repository name 填：${repoName}`,
+    "3. 选择 Public",
+    "4. 不要勾选 README、.gitignore 或 license",
+    "5. 点击 Create repository",
+    "6. 复制页面上的仓库地址，例如 https://github.com/<你的用户名>/<仓库名>.git",
+    "",
+    "拿到地址后重新运行：",
+    `node ${path.relative(process.cwd(), __filename)} publish --site ${siteDir} --repo-url <刚复制的仓库地址>`,
+  ].join("\n");
 }
 
 function ensureLocalGitIdentity(siteDir) {

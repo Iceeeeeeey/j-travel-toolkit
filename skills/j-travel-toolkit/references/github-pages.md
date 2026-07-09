@@ -12,18 +12,16 @@ https://<github-user>.github.io/<repo-name>/
 
 ## Prerequisites
 
-Publishing requires GitHub command-line access.
+Publishing requires one empty public GitHub repository per trip.
 
-Preferred:
+Default user flow:
 
-```bash
-gh auth status
-```
+1. Ask the user to open `https://github.com/new`.
+2. Ask them to create a `Public` repository with a safe trip repo name.
+3. Tell them not to initialize it with README, `.gitignore`, or license.
+4. Ask them to paste the repository URL, such as `https://github.com/<user>/<repo>.git`.
 
-If `gh` is unavailable or not authenticated, ask the user to either:
-
-- Run `gh auth login`, or
-- Create a public GitHub repository and provide the repository URL.
+GitHub CLI is optional automation only. Do not make ordinary users understand `gh auth login` before they can proceed.
 
 ## Privacy
 
@@ -47,16 +45,18 @@ npm install
 npm run build
 ```
 
-Preferred command from the generated site directory:
-
-```bash
-node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <site-dir> --repo-name <safe-trip-repo-name>
-```
-
-Use a repo URL when GitHub CLI is unavailable:
+Use the pasted repo URL:
 
 ```bash
 node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <site-dir> --repo-url <repo-url>
+```
+
+If the command is run without `--repo-url` and no git `origin` exists, the script will prompt for the repository URL when stdin is interactive.
+
+Optional automation when GitHub CLI is installed and authenticated:
+
+```bash
+node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <site-dir> --repo-name <safe-trip-repo-name>
 ```
 
 If the user intentionally wants to replace an existing generated trip repo, use:

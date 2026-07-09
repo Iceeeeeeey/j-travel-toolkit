@@ -59,13 +59,27 @@ npm run build
 ```
 
 9. Before publishing, perform the privacy check from `references/privacy-check.md`.
-10. Publish with GitHub Pages:
+10. Publish with GitHub Pages. If no `origin` remote exists, ask the user for a GitHub repository URL in plain Chinese before running publish:
+
+```text
+我现在需要一个空的 GitHub 公开仓库来发布链接。
+
+你打开 https://github.com/new，新建一个 Public 仓库：
+- Repository name 可以填：<repo-name>
+- 不要勾选 README、.gitignore、license
+- 创建后，把页面上的仓库地址发给我，例如：
+  https://github.com/<你的用户名>/<仓库名>.git
+
+你把这个地址发我后，我就继续发布。
+```
+
+Do not ask ordinary users to understand GitHub CLI. Treat GitHub CLI as optional automation only. Once the user provides a repo URL, run:
 
 ```bash
 node <skill-dir>/scripts/j-travel-toolkit.mjs publish --site <workdir>/<repo-name> --repo-url <github-repo-url>
 ```
 
-If GitHub CLI is unavailable or not authenticated, explain that publishing needs GitHub command-line access. Ask the user to run `gh auth login` or create a public GitHub repository and provide `--repo-url <github-repo-url>`.
+If the user cannot create a GitHub repo, stop with the generated local app folder and explain that a public link needs a public GitHub repository URL.
 
 11. Return the GitHub Pages URL and phone instructions:
 

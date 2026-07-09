@@ -72,19 +72,25 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
 3. 按模板填写核心行程。
 4. 上传填好的 Excel。
 5. AI 补齐贴士和常用链接。
-6. Skill 生成 app，并发布到 GitHub Pages。
-7. 手机打开公开链接，添加到主屏幕。
+6. Skill 生成 app。
+7. 按提示在 GitHub 新建一个空的 Public 仓库，把仓库 URL 发给 AI。
+8. Skill 发布到 GitHub Pages。
+9. 手机打开公开链接，添加到主屏幕。
 
-## GitHub 凭据
+## 发布到 GitHub
 
-发布公网链接需要把生成结果推到 GitHub。
+发布公网链接需要一个空的 GitHub 公开仓库。最简单的方式：
 
-推荐提前准备好其中一种：
+1. 打开 [https://github.com/new](https://github.com/new)。
+2. Repository name 填一个旅行名，比如 `rome-trip-2026`。
+3. 选择 `Public`。
+4. 不要勾选 README、`.gitignore` 或 license。
+5. 点击 `Create repository`。
+6. 把仓库 URL 发给 AI，例如：
 
-- GitHub CLI：安装后运行 `gh auth login`
-- SSH key：让 `git push` 可以推送到你的 GitHub 账号
-
-如果没有 GitHub CLI，Skill 会提示你先在 GitHub 创建一个公开仓库，再把仓库 URL 发回来继续发布。
+```text
+https://github.com/<你的用户名>/<仓库名>.git
+```
 
 最终链接类似：
 
@@ -107,5 +113,5 @@ Skill 生成器入口：
 
 ```bash
 node skills/j-travel-toolkit/scripts/j-travel-toolkit.mjs create --excel trip.xlsx --out ./my-trip-app
-node skills/j-travel-toolkit/scripts/j-travel-toolkit.mjs publish --site ./my-trip-app --repo-name my-trip-app
+node skills/j-travel-toolkit/scripts/j-travel-toolkit.mjs publish --site ./my-trip-app --repo-url https://github.com/<user>/<repo>.git
 ```
